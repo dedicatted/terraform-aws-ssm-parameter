@@ -58,6 +58,51 @@ module "ssm_parameter" {
   allowed_pattern = "^custom-.*$"
 }
 ```
+
+### Integration with EKC
+
+## Installation
+To get started with External Secrets, follow the [official External Secrets installation guide](https://external-secrets.io/v0.5.7/installation/) to set up External Secrets in your environment.
+
+## smm_secret.yaml
+
+```yaml
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: secretstore-sample
+spec:
+  provider:
+    aws:
+      service: ParameterStore
+      # Define a specific IAM role to limit access
+      # to certain secrets (optional)
+      role: iam-role
+      region: eu-central-1
+      auth:
+        secretRef:
+          accessKeyIDSecretRef:
+            name: awssm-secret
+            key: access-key
+          secretAccessKeySecretRef:
+            name: awssm-secret
+            key: secret-access-key
+```
+
+Explanation of the configuration:
+
+- `service`: Specifies that the provider is AWS Parameter Store.
+- `role` (optional): Defines a specific IAM role to limit access to certain secrets. If not provided, External Secrets will use the default AWS credentials.
+- `region`: Specifies the AWS region where Parameter Store is located.
+- `auth`: Specifies authentication details using AWS Access Key ID and Secret Access Key.
+  - `secretRef`: Specifies the reference to the Kubernetes Secrets containing AWS credentials.
+    - `accessKeyIDSecretRef`: Reference to the Kubernetes Secret containing the AWS Access Key ID.
+    - `secretAccessKeySecretRef`: Reference to the Kubernetes Secret containing the AWS Secret Access Key.
+
+Ensure that you replace the placeholder values (`iam-role`, `eu-central-1`, etc.) with your actual configuration. Additionally, create a Kubernetes Secret (`awssm-secret` in this case) containing the AWS Access Key ID and Secret Access Key.
+
+This configuration instructs External Secrets to use AWS Parameter Store as a secret provider, fetch secrets from the specified region, and authenticate using the provided AWS credentials. Adjust the configuration based on your specific requirements and AWS setup.
+
 ## Requirements
 
 No requirements.
